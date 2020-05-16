@@ -203,6 +203,89 @@
         </div>
       </el-dialog>
     </el-row>
+
+    <el-dialog title="支付方式" :visible.sync="cardDialogVisible" width="50%" :before-close="closePay">
+      <el-form label-width="150px" :model="cardValidateForm" ref="cardValidateForm" >
+        <el-col>
+          <el-divider content-position="left">银联支付</el-divider>
+        </el-col>
+
+        <el-col :span="8">
+          <el-form-item label="上海银行">
+            <el-radio v-model="radio" label="1">
+              <svg-icon name="上海银行" color="#FFF" class="svg"></svg-icon>
+            </el-radio>
+          </el-form-item>
+        </el-col>
+
+        <el-col :span="8">
+          <el-form-item label="招商银行">
+            <el-radio v-model="radio" label="2">
+              <svg-icon name="招商银行" color="#FFF" class="svg"></svg-icon>
+            </el-radio>
+          </el-form-item>
+        </el-col>
+
+
+        <el-col :span="8">
+          <el-form-item label="建设银行">
+            <el-radio v-model="radio" label="3">
+              <svg-icon name="建设银行" color="#FFF" class="svg"></svg-icon>
+            </el-radio>
+          </el-form-item>
+        </el-col>
+
+
+        <el-col :span="8">
+          <el-form-item label="工商银行">
+            <el-radio v-model="radio" label="4">
+              <svg-icon name="工商银行" color="#FFF" class="svg"></svg-icon>
+            </el-radio>
+          </el-form-item>
+        </el-col>
+
+
+        <el-col :span="8">
+          <el-form-item label="中信银行">
+            <el-radio v-model="radio" label="5">
+              <svg-icon name="中信银行" color="#FFF" class="svg"></svg-icon>
+            </el-radio>
+          </el-form-item>
+        </el-col>
+
+
+        <el-col :span="8">
+          <el-form-item label="中国农业银行">
+            <el-radio v-model="radio" label="6">
+              <svg-icon name="中国农业银行" color="#FFF" class="svg"></svg-icon>
+            </el-radio>
+          </el-form-item>
+        </el-col>
+
+        <el-col>
+          <el-divider content-position="left">账户信息</el-divider>
+        </el-col>
+
+        <el-col>
+          <el-form-item label="银行卡号："  :prop="account" :rules="[{ required: true, message: '不能为空'},{ type: 'number', message: '必须为数字值'}]">
+            <el-input type="text" v-model="account"></el-input>
+          </el-form-item>
+        </el-col>
+
+        <el-col>
+          <el-form-item label="密码：" :prop="password" :rules="[{ required: true, message: '不能为空'},{ type: 'number', message: '必须为数字值'}]">
+            <el-input type="password" v-model="password"></el-input>
+          </el-form-item>
+        </el-col>
+
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="submitCard('cardValidateForm')">立即支付</el-button>
+      </div>
+    </el-dialog>
+
+
+
     <el-dialog title="支付" :visible.sync="payDialogVisible" width="50%" :before-close="closePay">
       <el-form label-width="150px">
         <el-row>
@@ -281,7 +364,11 @@
         data() {
             return {
                 tableData: [],
-                cityOptions: [],
+                cardValidateForm:{},
+                cityOptions:[],
+                password: '',
+                account: '',
+                radio: '1',
                 isShow: false,
                 orderId: 0,
                 buyTicket: {
@@ -308,6 +395,7 @@
                 layout: "prev, pager, next",
                 buyTicketDialogVisible: false,
                 payDialogVisible: false,
+                cardDialogVisible: false,
                 dynamicValidateForm: {
                     orderAmount: '',
                     orderSum: 0,
@@ -432,6 +520,17 @@
                 })
 
             },
+            submitCard(formName){
+              this.$refs[formName].validate(valid => {
+                if (valid) {
+                  this.payDialogVisible = true;
+                  this.cardDialogVisible = false;
+                } else {
+                  return false;
+                }
+              });
+
+            },
             submitPay() {
                 let _that = this.buyTicketInfo;
                 this.dynamicValidateForm.lineId = _that.lineId;
@@ -471,7 +570,8 @@
                     cancelButtonText: '取消',
                     type: 'warning'
                 }).then(() => {
-                    this.payDialogVisible = false;
+                  this.payDialogVisible = false;
+                  this.cardDialogVisible = false;
                     this.dynamicValidateForm = {
                         orderAmount: '',
                         orderSum: 0,
@@ -611,7 +711,8 @@
                     domains: [],
                     id: 0
                 };
-                this.payDialogVisible = false
+                this.payDialogVisible = false;
+                this.cardDialogVisible = false;
             },
             removeDomain(item) {
                 let index = this.dynamicValidateForm.domains.indexOf(item);
@@ -624,7 +725,7 @@
             submitForm(formName) {
                 this.$refs[formName].validate((valid) => {
                     if (valid) {
-                        this.payDialogVisible = true;
+                        this.cardDialogVisible = true;
                         this.buyTicketDialogVisible = false
                     } else {
                         return false;
