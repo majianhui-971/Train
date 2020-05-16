@@ -132,9 +132,9 @@
       </div>
 
       <div>
-      <span> 单张票价 {{buyTicketInfo.price}}</span>
-      <span> 乘客个数 {{maxItem}}</span>
-      <span> 实际金额{{maxItem*buyTicketInfo.price | formatMoney}}</span>
+        <span> 单张票价 {{buyTicketInfo.price}}</span>
+        <span> 乘客个数 {{maxItem}}</span>
+        <span> 实际金额{{maxItem*buyTicketInfo.price | formatMoney}}</span>
       </div>
 
 
@@ -179,6 +179,73 @@
       <el-button @click="resetForm('dynamicValidateForm')">重置</el-button>
     </div>
   </el-dialog>
+
+
+  <el-dialog title="支付" :visible.sync="payDialogVisible" width="50%" :before-close="closePay">
+    <el-form label-width="150px">
+      <el-row>
+        <el-col>
+          <el-divider content-position="left">车票信息</el-divider>
+        </el-col>
+        <el-col :span="12">
+          <el-form-item label="出发站：">
+            {{buyTicketInfo.startSiteName}}
+          </el-form-item>
+        </el-col>
+
+        <el-col :span="12">
+          <el-form-item label="抵达站：">
+            {{buyTicketInfo.endSiteName}}
+          </el-form-item>
+        </el-col>
+
+        <el-col :span="12">
+          <el-form-item label="发车时间：">
+            {{buyTicketInfo.startTime | formatDate}}
+          </el-form-item>
+        </el-col>
+
+        <el-col :span="12">
+          <el-form-item label="抵达时间：">
+           {{buyTicketInfo.endTime | formatDate}}
+          </el-form-item>
+        </el-col>
+
+        <el-col>
+          <el-divider content-position="left">乘客信息</el-divider>
+        </el-col>
+
+        <div v-for="(domain) in dynamicValidateForm.domains">
+          <el-col :span="12">
+            <el-form-item label="姓名：">
+              {{ domain.userName }}
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="身份证：">
+              {{ domain.idNumber }}
+            </el-form-item>
+          </el-col>
+        </div>
+        <el-col>
+          <el-divider content-position="left">支付信息</el-divider>
+        </el-col>
+        <el-col>
+          <el-form-item label="车票数量：">
+            {{maxItem}}
+          </el-form-item>
+        </el-col>
+        <el-col>
+          <el-form-item label="支付金额：">
+            {{maxItem*buyTicketInfo.price | formatMoney}}
+          </el-form-item>
+        </el-col>
+      </el-row>
+    </el-form>
+    <div slot="footer" class="dialog-footer">
+      <el-button type="primary" @click="submitPay()">立即支付</el-button>
+    </div>
+  </el-dialog>
 </el-row>
 </template>
 <script>
@@ -214,6 +281,7 @@
                 total:0,
                 layout: "prev, pager, next",
                 buyTicketDialogVisible:false,
+                payDialogVisible: false,
                 dynamicValidateForm: {
                     orderAmount:'',
                     orderSum:0,
@@ -231,12 +299,10 @@
                 pickerOptions:{
                     disabledDate(time) {
                         let date = new Date();
-                        date=new Date(date.setDate(date.getDate() - 1))
-                        return time.getTime() <  date;
+                        date = new Date(date.setDate(date.getDate() - 1));
+                        return time.getTime() < date;
                     }
-                },
-
-
+                }
             }
         },
         created(){
@@ -271,58 +337,54 @@
             onSubmit(){
                 this.$refs['buyTicketForm'].validate((valid) =>{
                     if(valid){
-                        this.loading=true
-                        fetchTicketInfo(this.buyTicket).then(res=>{
-                            this.list=res.data.list
-                            this.total=res.data.total
-                            this.loading=false
+                        this.loading = true;
+                        fetchTicketInfo(this.buyTicket).then(res => {
+                            this.list = res.data.list;
+                            this.total = res.data.total;
+                            this.loading = false
                         })
-
                     }else {
                         return false
                     }
                 })
-
             },
             goBackDay(){
-                this.$refs['buyTicketForm'].validate((valid) =>{
-                    if(valid){
-                        this.loading=true
-                        let date1=this.buyTicket.startTime
-                        this.buyTicket.startTime = new Date(this.buyTicket.startTime.setDate(this.buyTicket.startTime.getDate() - 1))
+                this.$refs['buyTicketForm'].validate((valid) => {
+                    if (valid) {
+                        this.loading = true;
+                        let date1 = this.buyTicket.startTime;
+                        this.buyTicket.startTime = new Date(this.buyTicket.startTime.setDate(this.buyTicket.startTime.getDate() - 1));
 
-                        let date =new Date();
-                        date=new Date(date.setDate(date.getDate() - 1))
-                        if(date1<date){
-                            this.loading = false
+                        let date = new Date();
+                        date = new Date(date.setDate(date.getDate() - 1));
+                        if (date1 < date) {
+                            this.loading = false;
                             this.$message({
                                 type: 'waring',
                                 message: '只可查看当天和当天以后的车票信息',
                                 showClose: true
                             })
-                        }else {
-                        fetchTicketInfo(this.buyTicket).then(res=>{
-                            this.list=res.data.list
-                            this.total=res.data.total
-                            this.loading=false
-                        })
+                        } else {
+                            fetchTicketInfo(this.buyTicket).then(res => {
+                                this.list = res.data.list;
+                                this.total = res.data.total;
+                                this.loading = false
+                            })
                         }
-
-                    }else {
+                    } else {
                         return false
                     }
                 })
-
             },
             nextDay(){
                 this.$refs['buyTicketForm'].validate((valid) =>{
                     if(valid){
-                        this.loading=true
-                        this.buyTicket.startTime = new Date(this.buyTicket.startTime.setDate(this.buyTicket.startTime.getDate() + 1))
-                        fetchTicketInfo(this.buyTicket).then(res=>{
-                            this.list=res.data.list
-                            this.total=res.data.total
-                            this.loading=false
+                        this.loading = true;
+                        this.buyTicket.startTime = new Date(this.buyTicket.startTime.setDate(this.buyTicket.startTime.getDate() + 1));
+                        fetchTicketInfo(this.buyTicket).then(res => {
+                            this.list = res.data.list;
+                            this.total = res.data.total;
+                            this.loading = false
                         })
 
                     }else {
@@ -358,12 +420,43 @@
                 this.buyTicket["page"] = val;
                 this.onSubmit();
             },
+            submitPay() {
+                let _that = this.buyTicketInfo;
+                this.dynamicValidateForm.lineId = _that.lineId;
+                this.dynamicValidateForm.orderPrice = _that.price;
+                this.dynamicValidateForm.orderSum = this.maxItem;
+                this.dynamicValidateForm.cId = JSON.parse(window.sessionStorage.user).id;
+                this.dynamicValidateForm.ticketNumber = _that.ticketNumber;
+                this.dynamicValidateForm.ticketId = _that.id;
+                addInfoData(this.dynamicValidateForm).then(res => {
+                    if (res.data.type === 'success') {
+                        this.$message({
+                            type: 'success',
+                            message: '支付成功',
+                        });
+                        this.onSubmit();
+                        this.clearData();
+                    } else if (res.data.type === 'error') {
+                        this.$message({
+                            type: 'waring',
+                            message: '票数不足，无法支付',
+                        });
+                        this.onSubmit();
+                        this.clearData();
+                    } else if (res.data.type === 'repeat') {
+                        this.$message({
+                            type: 'waring',
+                            message: '您已购买过改时间段的车票',
+                        });
+                        this.onSubmit();
+                        this.clearData();
+                    }
+                })
+            },
             handleClose(done) {
-                this.$confirm('确认关闭？')
-                    .then(_ => {
+                this.$confirm('确认关闭？').then(_ => {
                         done();
-                    })
-                    .catch(_ => {
+                    }).catch(_ => {
                         this.dynamicValidateForm.domains.push(
                             {
                                 userName: JSON.parse(window.sessionStorage.user).name,
@@ -371,15 +464,15 @@
                             }
                         )
                     });
-                this.maxItem=1
-                this.dynamicValidateForm={
-                    orderAmount:'',
-                    orderSum:0,
-                    orderPrice:'',
-                    cId:0,
-                    lineId:'',
-                    ticketNumber:0,
-                    ticketId:0,
+                this.maxItem = 1;
+                this.dynamicValidateForm = {
+                    orderAmount: '',
+                    orderSum: 0,
+                    orderPrice: '',
+                    cId: 0,
+                    lineId: '',
+                    ticketNumber: 0,
+                    ticketId: 0,
                     domains: [],
                 }
             },
@@ -388,7 +481,7 @@
                     this.$message({
                         type: 'success',
                         message: '单笔订单最多添加三个乘车人',
-                    })
+                    });
                     return
                 }
                 this.maxItem=this.dynamicValidateForm.domains.length+1
@@ -397,72 +490,56 @@
                     idNumber:''
                 });
             },
+            closePay() {
+                this.$confirm('确认关闭支付吗?', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                  this.payDialogVisible = false;
+                    this.dynamicValidateForm = {
+                        orderAmount: '',
+                        orderSum: 0,
+                        orderPrice: '',
+                        cId: 0,
+                        lineId: '',
+                        ticketNumber: 0,
+                        ticketId: 0,
+                        domains: [],
+                    }
+                })
+            },
             clearData(){
-                this.maxItem=1
-                this.dynamicValidateForm={
-                    orderAmount:'',
-                    orderSum:0,
-                    orderPrice:'',
-                    cId:0,
-                    lineId:'',
-                    ticketNumber:0,
-                    ticketId:0,
+                this.maxItem = 1;
+                this.dynamicValidateForm = {
+                    orderAmount: '',
+                    orderSum: 0,
+                    orderPrice: '',
+                    cId: 0,
+                    lineId: '',
+                    ticketNumber: 0,
+                    ticketId: 0,
                     domains: [],
-                }
-                this.buyTicketDialogVisible=false
+                };
+                this.payDialogVisible = false
             },
             removeDomain(item) {
-                let index = this.dynamicValidateForm.domains.indexOf(item)
+                let index = this.dynamicValidateForm.domains.indexOf(item);
                 if (index !== -1) {
                     this.dynamicValidateForm.domains.splice(index, 1)
                 }
-               let data = this.maxItem
-                this.maxItem=data-1
+                let data = this.maxItem;
+                this.maxItem = data - 1
             },
             submitForm(formName) {
                 this.$refs[formName].validate((valid) => {
                     if (valid) {
-                        let _that=this.buyTicketInfo
-                        console.log(_that)
-                        this.dynamicValidateForm.lineId=_that.lineId
-                        this.dynamicValidateForm.orderPrice=_that.price
-                        this.dynamicValidateForm.orderSum=this.maxItem
-                        this.dynamicValidateForm.cId= JSON.parse(window.sessionStorage.user).id
-                        this.dynamicValidateForm.ticketNumber=_that.ticketNumber
-                        this.dynamicValidateForm.ticketId=_that.id
-                        addInfoData(this.dynamicValidateForm).then(res=>{
-                           if(res.data.type==='success'){
-                               this.$message({
-                                   type: 'success',
-                                   message: '支付成功',
-                               });
-                               this.onSubmit();
-                               this.clearData();
-                           }else if(res.data.type==='error'){
-                               this.$message({
-                                   type: 'waring',
-                                   message: '票数不足，无法支付',
-                               });
-                               this.onSubmit();
-                               this.clearData();
-                           }else if(res.data.type==='repeat'){
-                               this.$message({
-                                   type: 'waring',
-                                   message: '您已购买过改时间段的车票',
-                               });
-                               this.onSubmit();
-                               this.clearData();
-                           }
-                        })
-
-
+                        this.payDialogVisible = true;
+                        this.buyTicketDialogVisible = false
                     } else {
-                        console.log('error submit!!');
                         return false;
                     }
                 });
-
-
             },
             resetForm(formName) {
                 this.$refs[formName].resetFields();

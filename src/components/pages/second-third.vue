@@ -203,6 +203,71 @@
         </div>
       </el-dialog>
     </el-row>
+    <el-dialog title="支付" :visible.sync="payDialogVisible" width="50%" :before-close="closePay">
+      <el-form label-width="150px">
+        <el-row>
+          <el-col>
+            <el-divider content-position="left">车票信息</el-divider>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="出发站：">
+              {{buyTicketInfo.startSiteName}}
+            </el-form-item>
+          </el-col>
+
+          <el-col :span="12">
+            <el-form-item label="抵达站：">
+              {{buyTicketInfo.endSiteName}}
+            </el-form-item>
+          </el-col>
+
+          <el-col :span="12">
+            <el-form-item label="发车时间：">
+              {{buyTicketInfo.startTime | formatDate}}
+            </el-form-item>
+          </el-col>
+
+          <el-col :span="12">
+            <el-form-item label="抵达时间：">
+              {{buyTicketInfo.endTime | formatDate}}
+            </el-form-item>
+          </el-col>
+
+          <el-col>
+            <el-divider content-position="left">乘客信息</el-divider>
+          </el-col>
+
+          <div v-for="(domain) in dynamicValidateForm.domains">
+            <el-col :span="12">
+              <el-form-item label="姓名：">
+                {{ domain.userName }}
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item label="身份证：">
+                {{ domain.idNumber }}
+              </el-form-item>
+            </el-col>
+          </div>
+          <el-col>
+            <el-divider content-position="left">支付信息</el-divider>
+          </el-col>
+          <el-col>
+            <el-form-item label="车票数量：">
+              {{maxItem}}
+            </el-form-item>
+          </el-col>
+          <el-col>
+            <el-form-item label="支付金额：">
+              {{maxItem*buyTicketInfo.price | formatMoney}}
+            </el-form-item>
+          </el-col>
+        </el-row>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="submitPay()">立即支付</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -242,6 +307,7 @@
                 total: 0,
                 layout: "prev, pager, next",
                 buyTicketDialogVisible: false,
+                payDialogVisible: false,
                 dynamicValidateForm: {
                     orderAmount: '',
                     orderSum: 0,
@@ -365,6 +431,58 @@
                     }
                 })
 
+            },
+            submitPay() {
+                let _that = this.buyTicketInfo;
+                this.dynamicValidateForm.lineId = _that.lineId;
+                this.dynamicValidateForm.orderPrice = _that.price;
+                this.dynamicValidateForm.orderSum = this.maxItem;
+                this.dynamicValidateForm.cId = JSON.parse(window.sessionStorage.user).id;
+                this.dynamicValidateForm.ticketNumber = _that.ticketNumber;
+                this.dynamicValidateForm.ticketId = _that.id;
+                addInfoData(this.dynamicValidateForm).then(res => {
+                    if (res.data.type === 'success') {
+                        this.$message({
+                            type: 'success',
+                            message: '支付成功，您的改签已完成，上次购票金额将退回您的账号',
+                        });
+                        this.onSubmit();
+                        this.clearData();
+                    } else if (res.data.type === 'error') {
+                        this.$message({
+                            type: 'waring',
+                            message: '票数不足，无法支付',
+                        });
+                        this.onSubmit();
+                        this.clearData();
+                    } else if (res.data.type === 'repeat') {
+                        this.$message({
+                            type: 'waring',
+                            message: '您已购买过改时间段的车票',
+                        });
+                        this.onSubmit();
+                        this.clearData();
+                    }
+                })
+            },
+            closePay() {
+                this.$confirm('确认关闭支付吗?', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    this.payDialogVisible = false;
+                    this.dynamicValidateForm = {
+                        orderAmount: '',
+                        orderSum: 0,
+                        orderPrice: '',
+                        cId: 0,
+                        lineId: '',
+                        ticketNumber: 0,
+                        ticketId: 0,
+                        domains: [],
+                    }
+                })
             },
             goBackDay() {
                 this.$refs['buyTicketForm'].validate((valid) => {
@@ -493,7 +611,7 @@
                     domains: [],
                     id: 0
                 };
-                this.buyTicketDialogVisible = false
+                this.payDialogVisible = false
             },
             removeDomain(item) {
                 let index = this.dynamicValidateForm.domains.indexOf(item);
@@ -506,38 +624,8 @@
             submitForm(formName) {
                 this.$refs[formName].validate((valid) => {
                     if (valid) {
-                        let _that = this.buyTicketInfo;
-                        this.dynamicValidateForm.lineId = _that.lineId;
-                        this.dynamicValidateForm.orderPrice = _that.price;
-                        this.dynamicValidateForm.orderSum = this.maxItem;
-                        this.dynamicValidateForm.cId = JSON.parse(window.sessionStorage.user).id;
-                        this.dynamicValidateForm.ticketNumber = _that.ticketNumber;
-                        this.dynamicValidateForm.ticketId = _that.id;
-                        this.dynamicValidateForm.id = this.orderId;
-                        addInfoData(this.dynamicValidateForm).then(res => {
-                            if (res.data.type === 'success') {
-                                this.$message({
-                                    type: 'success',
-                                    message: '支付成功',
-                                });
-                                this.onSubmit();
-                                this.clearData();
-                            } else if (res.data.type === 'error') {
-                                this.$message({
-                                    type: 'waring',
-                                    message: '票数不足，无法支付',
-                                });
-                                this.onSubmit();
-                                this.clearData();
-                            } else if (res.data.type === 'repeat') {
-                                this.$message({
-                                    type: 'waring',
-                                    message: '您已购买过改时间段的车票',
-                                });
-                                this.onSubmit();
-                                this.clearData();
-                            }
-                        })
+                        this.payDialogVisible = true;
+                        this.buyTicketDialogVisible = false
                     } else {
                         return false;
                     }
