@@ -348,7 +348,7 @@
         </el-row>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="submitPay()">立即支付</el-button>
+        <el-button type="primary" @click="submitPay()">确定支付</el-button>
       </div>
     </el-dialog>
   </div>
@@ -533,6 +533,7 @@
             },
             submitPay() {
                 let _that = this.buyTicketInfo;
+                this.dynamicValidateForm.id = this.orderId;
                 this.dynamicValidateForm.lineId = _that.lineId;
                 this.dynamicValidateForm.orderPrice = _that.price;
                 this.dynamicValidateForm.orderSum = this.maxItem;
