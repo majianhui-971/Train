@@ -22,8 +22,8 @@
       </el-table-column>
       <el-table-column prop="capacity" label="客容量" align="center">
       </el-table-column>
-      <el-table-column prop="emptyCapacity" label="空余量" align="center">
-      </el-table-column>
+    <!--  <el-table-column prop="emptyCapacity" label="空余量" align="center">
+      </el-table-column>-->
       <el-table-column prop="driveNumber" label="车次" align="center">
       </el-table-column>
       <el-table-column v-if="stateShow" prop="state" label="状态" align="center">
@@ -56,9 +56,9 @@
         <el-form-item label="客容量" prop="capacity">
           <el-input v-model="drive.capacity" autocomplete="off"></el-input>
         </el-form-item>
-        <el-form-item label="座位空余量" prop="emptyCapacity">
+ <!--       <el-form-item label="座位空余量" prop="emptyCapacity">
           <el-input v-model="drive.emptyCapacity" autocomplete="off"></el-input>
-        </el-form-item>
+        </el-form-item>-->
         <el-form-item label="车次" prop="driveNumber">
           <el-input v-model="drive.driveNumber" autocomplete="off"></el-input>
         </el-form-item>
@@ -111,9 +111,6 @@
                     driveAge: [
                         {
                             required: true, message: '请输入司龄', trigger: 'blur'
-                        },
-                        {
-                            type: 'number', message: '司龄必须为数字值'
                         }
                     ],
                     capacity: [
@@ -121,14 +118,14 @@
                             required: true, message: '请输入容量', trigger: 'blur'
                         }
                     ],
-                    emptyCapacity: [
+                  /*  emptyCapacity: [
                         {
                             required: true, message: '请输入空余量', trigger: 'blur'
                         },
                         {
                             type: 'number', message: '空余量必须为数字值'
                         }
-                    ],
+                    ],*/
                     driveNumber: [
                         {
                             required: true, message: '请输入车次号', trigger: 'blur'
