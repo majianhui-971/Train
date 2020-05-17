@@ -119,9 +119,6 @@
                     capacity: [
                         {
                             required: true, message: '请输入容量', trigger: 'blur'
-                        },
-                        {
-                            type: 'number', message: '容量必须为数字值'
                         }
                     ],
                     emptyCapacity: [
