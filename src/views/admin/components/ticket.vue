@@ -7,7 +7,7 @@
       <el-col :span="2">
         <el-button type="primary" size="small" icon="el-icon-search" @click="fetchDataInfo">搜索</el-button>
       </el-col>
-      <el-col :span="3" :offset="8" style="text-align: center">
+      <el-col :span="5" :offset="6" style="text-align: center">
         <el-button type="success" size="small" icon="el-icon-folder-add" @click="addDataInfo">新增</el-button>
         <el-button v-if="oneOrMoreShow" type="danger" size="small" icon="el-icon-delete" @click="deleteDataInfo">删除
         </el-button>
