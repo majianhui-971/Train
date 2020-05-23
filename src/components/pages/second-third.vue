@@ -535,7 +535,7 @@
                 let _that = this.buyTicketInfo;
                 this.dynamicValidateForm.id = this.orderId;
                 this.dynamicValidateForm.lineId = _that.lineId;
-                this.dynamicValidateForm.orderPrice = _that.price;
+                this.dynamicValidateForm.orderAmount = _that.price;
                 this.dynamicValidateForm.orderSum = this.maxItem;
                 this.dynamicValidateForm.cId = JSON.parse(window.sessionStorage.user).id;
                 this.dynamicValidateForm.ticketNumber = _that.ticketNumber;
